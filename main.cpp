@@ -11,6 +11,7 @@ class Entity //BASE
 public:
 	virtual void GetInfo() const = 0;
 	virtual ~Entity() {}
+	static Entity* createEntity(EntityID_e id );
 };//class Entity
 
 
@@ -36,7 +37,7 @@ public:
 	void GetInfo() const{PRINT("Horseman");}
 };//class Horseman
 
-Entity * createEntity(EntityID_e eID)
+Entity * Entity::createEntity(EntityID_e eID)
 {
 	Entity * p;
 	switch (eID)
@@ -60,9 +61,9 @@ typedef std::vector<Entity *> Army_t;
 
 void Create(Army_t &army)
 {
-	army.push_back(createEntity(eEntityID_Trooper));
-	army.push_back(createEntity(eEntityID_Archer));
-	army.push_back(createEntity(eEntityID_Horseman));
+	army.push_back(Entity::createEntity(eEntityID_Trooper));
+	army.push_back(Entity::createEntity(eEntityID_Archer));
+	army.push_back(Entity::createEntity(eEntityID_Horseman));
 }
 
 int main()
