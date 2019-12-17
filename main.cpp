@@ -4,67 +4,65 @@
 #define PRINT(WHAT) std::cout<<WHAT<<std::endl
 
 
-enum EntityID_e { eEntityID_Trooper, eEntityID_Archer, eEntityID_Horseman};
+enum EntityID_e {eEntityID_Trooper=0, eEntityID_Archer, eEntityID_Horseman};
 
 class Entity //BASE
 {
-	Entity* p;
-
 public:
-	Entity(): p(NULL) { }
-	Entity(EntityID_e id);
-	virtual void GetInfo() const { p->GetInfo(); } //HOMOMORPHIC
-	virtual ~Entity(){ /*if(p!=NULL)*/{delete p;p=0;}}
+	virtual void GetInfo() const = 0;
+	virtual ~Entity() {}
 };//class Entity
+
 
 class Trooper: public Entity //CHILD
 {
-	Trooper(): Entity() {}
-	Trooper(Trooper&);
-	Trooper operator=(Trooper&);
-	friend class Entity;
 
 public:
+	Trooper(): Entity() {}
 	void GetInfo() const{PRINT("Trooper");}
 };//class Trooper
 
 class Archer: public Entity //CHILD
 {
-	Archer(): Entity() {}
-	Archer(Archer&);
-	Archer operator=(Archer&);
-	friend class Entity;
-
 public:
+	Archer(): Entity() {}
 	void GetInfo() const{PRINT("Archer");}
 };//class Archer
 
 class Horseman: public Entity //CHILD
 {
-	Horseman(): Entity() {}
-	Horseman(Horseman&);
-	Horseman operator=(Horseman&);
-	friend class Entity;
-
 public:
+	Horseman(): Entity() {}
 	void GetInfo() const{PRINT("Horseman");}
 };//class Horseman
 
-Entity::Entity( EntityID_e eID)
+Entity * createEntity(EntityID_e eID)
 {
-	if (eID == eEntityID_Trooper) p = new Trooper;
-	else if (eID == eEntityID_Archer) p = new Archer;
-	else if (eID == eEntityID_Horseman) p = new Horseman;
-	else assert(false);
+	Entity * p;
+	switch (eID)
+	{
+		case eEntityID_Trooper:
+			p = new Trooper();
+			break;
+		case eEntityID_Archer:
+			p = new Archer();
+			break;
+		case eEntityID_Horseman:
+			p = new Horseman();
+			break;
+		default:
+			assert( false);
+	}
+	return p;
 }
 
 typedef std::vector<Entity *> Army_t;
 
 void Create(Army_t &army)
 {
-	army.push_back(new Entity( eEntityID_Trooper));
-	army.push_back(new Entity( eEntityID_Archer));
-	army.push_back(new Entity( eEntityID_Horseman));
+	army.push_back(createEntity(eEntityID_Trooper));
+	army.push_back(createEntity(eEntityID_Archer));
+	army.push_back(createEntity(eEntityID_Horseman));
 }
 
 int main()
