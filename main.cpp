@@ -134,43 +134,6 @@ public:
 };//class CarthaginianElephant
 
 
-class ArmyFactory
-{
-// Abstract factory to produce warriors
-public:
-	virtual Trooper* CreateTrooper() const = 0;
-	virtual Archer* CreateArcher() const = 0;
-	virtual Horseman* CreateHorseman() const= 0;
-	virtual Catapult* CreateCatapult() const= 0;
-	virtual Elephant* CreateElephant() const= 0;
-	virtual ~ArmyFactory() {}
-};//class ArmyFactory
-
-
-class RomanArmyFactory: public ArmyFactory
-{
-// Factory tor procude warriors of Roman army
-public:
-	Trooper* CreateTrooper() const{return new RomanTrooper;}
-	Archer* CreateArcher() const{return new RomanArcher;}
-	Horseman* CreateHorseman() const{return new RomanHorseman;}
-	Catapult* CreateCatapult() const{return new RomanCatapult;}
-	Elephant* CreateElephant() const{return new RomanElephant;}
-};//class RomanArmyFactory
-
-
-
-class CarthaginianArmyFactory: public ArmyFactory
-{
-// Factory tor procude warriors of Carthaginian army
-public:
-	Trooper* CreateTrooper() const{return new CarthaginianTrooper;}
-	Archer* CreateArcher() const{return new CarthaginianArcher;}
-	Horseman* CreateHorseman() const{return new CarthaginianHorseman;}
-	Catapult* CreateCatapult() const{return new CarthaginianCatapult;}
-	Elephant* CreateElephant() const{return new CarthaginianElephant;}
-};
-
 class Army
 {
 // Class which contains all warriors of some army
@@ -206,34 +169,80 @@ public:
 	
 };//class Army
 
+class ArmyBuilder
+{
+//vasic class to build army with default impl
+protected:
+	Army* a;
+
+public:
+	ArmyBuilder(): a(0) {}
+	virtual ~ArmyBuilder() {}
+	virtual void CreateArmy() {}
+	virtual void BuildTrooper() {}
+	virtual void BuildArcher() {}
+	virtual void BuildHorseman() {}
+	virtual void BuildCatapult() {}
+	virtual void BuildElephant() {}
+	virtual Army* GetArmy() {return a;}
+};//class ArmyBuilder
+
+// Roman army has no elephants
+class RomanArmyBuilder: public ArmyBuilder
+{
+public:
+	void CreateArmy() {a = new Army;}
+	void BuildTrooper() {a->vt.push_back(new RomanTrooper());}
+	void BuildArcher() {a->va.push_back(new RomanArcher());}
+	void BuildHorseman() {a->vh.push_back(new RomanHorseman());}
+	void BuildCatapult() {a->vc.push_back(new RomanCatapult());}
+};
+
+
+// Carthaginian army has no catapults
+class CarthaginianArmyBuilder: public ArmyBuilder
+{
+public:
+	void CreateArmy() {a = new Army;}
+	void BuildTrooper() {a->vt.push_back(new CarthaginianTrooper());}
+	void BuildArcher() {a->va.push_back(new CarthaginianArcher());}
+	void BuildHorseman() {a->vh.push_back(new CarthaginianHorseman());}
+	void BuildElephant() {a->ve.push_back(new CarthaginianElephant());}
+};
+
+
+class Director
+{
+//Building decision responcible
+public:
+	Army* createArmy(ArmyBuilder & builder )
+	{
+		builder.CreateArmy();
+		builder.BuildTrooper();
+		builder.BuildArcher();
+		builder.BuildHorseman();
+		builder.BuildCatapult();
+		builder.BuildElephant();
+		return(builder.GetArmy());
+	}
+};
+
 
 class Game
 {
 // Scope of game including any army
 
-	RomanArmyFactory ra_factory;
-	CarthaginianArmyFactory ca_factory;
+	Director dir;
+	RomanArmyBuilder roman_builder;
+	CarthaginianArmyBuilder carf_builder;
 
 	Army *romanArmy;
 	Army *carthaginianArmy;
 
-
-	Army* createArmy(ArmyFactory &factory)
-	{
-		Army* p = new Army;
-
-		p->vt.push_back(factory.CreateTrooper());
-		p->va.push_back(factory.CreateArcher());
-		p->vh.push_back(factory.CreateHorseman());
-		p->vc.push_back(factory.CreateCatapult());
-		p->ve.push_back(factory.CreateElephant());
-		return p;
-	}
-
 public:
 	Game()
-		:romanArmy(createArmy(ra_factory))
-		,carthaginianArmy(createArmy(ca_factory))
+		:romanArmy(dir.createArmy(roman_builder))
+		,carthaginianArmy(dir.createArmy(carf_builder))
 	{
 		TRACE_WHERE;
 	}
