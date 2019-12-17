@@ -3,112 +3,196 @@
 #include <iostream>
 #define PRINT(WHAT) std::cout<<WHAT<<std::endl
 #define TRACE_WHERE PRINT(__FUNCTION__)
+//#define TRACE_WHERE
 
-class Warrior //BASE
+class IEntity //BASE
 {
+
 public:
 	virtual void GetInfo() const = 0;
-	virtual ~Warrior() {}
-};//class Warrior
+	virtual ~IEntity() {}
+};//class IEntity
 
-
-class Trooper: public Warrior //CHILD
+//Abstract classes of all warriors
+class Trooper
 {
 
 public:
-	Trooper(): Warrior() {TRACE_WHERE;}
-	void GetInfo() const{PRINT("I'm Trooper");}
-	~Trooper() {TRACE_WHERE;}
+	Trooper() {TRACE_WHERE;}
+	virtual ~Trooper() {TRACE_WHERE;}
+	virtual void GetInfo() const = 0;
 };//class Trooper
 
-class Archer: public Warrior //CHILD
+class Archer
 {
 
 public:
-	Archer(): Warrior() {TRACE_WHERE;}
-	void GetInfo() const{PRINT("I'm Archer");}
-	~Archer() {TRACE_WHERE;}
+	Archer() {TRACE_WHERE;}
+	virtual ~Archer() {TRACE_WHERE;}
+	virtual void GetInfo() const = 0;
 };//class Archer
 
-class Horseman: public Warrior //CHILD
+class Horseman
 {
 
 public:
-	Horseman(): Warrior() {TRACE_WHERE;}
-	void GetInfo() const{PRINT("I'm Horseman");}
-	~Horseman() {TRACE_WHERE;}
+	Horseman() {TRACE_WHERE;}
+	virtual ~Horseman() {TRACE_WHERE;}
+	virtual void GetInfo() const = 0;
 };//class Horseman
 
-class Factory
+// classes of all types of warriors in Roman army
+class RomanTrooper: public Trooper
 {
 
 public:
-	virtual Warrior* CreateWarrior() const = 0;
-	virtual ~Factory() {TRACE_WHERE;}
-};
+	void GetInfo() const{PRINT("I'm Roman Trooper");}
+};//class RomanTrooper
 
-class TroopFactory: public Factory
+class RomanArcher: public Archer
 {
 
 public:
-	Warrior* CreateWarrior() const{return new Trooper;}
-};
+	void GetInfo() const{PRINT("I'm Roman Archer");}
+};//class RomanArcher
 
-class ArchersFactory: public Factory
+class RomanHorseman: public Horseman
 {
 
 public:
-	Warrior* CreateWarrior() const{return new Archer;}
+	void GetInfo() const{PRINT("I'm Roman Horseman");}
+};//class RomanHorseman
+
+
+
+class CarthaginianTrooper: public Trooper
+{
+// classes of all types of warriors in Carthaginian army
+public:
+	void GetInfo() const{PRINT("I'm Carthaginian Trooper");}
+};//class CarthaginianTrooper
+
+class CarthaginianArcher: public Archer
+{
+public:
+	void GetInfo() const{PRINT("I'm Carthaginian Archer");}
+};//class CarthaginianArcher
+
+class CarthaginianHorseman: public Horseman
+{
+public:
+	void GetInfo() const{PRINT("I'm Carthaginian Horseman");}
+};//class CarthaginianHorseman
+
+
+class ArmyFactory
+{
+// Abstract factory to produce warriors
+public:
+	virtual Trooper* CreateTrooper() const = 0;
+	virtual Archer* CreateArcher() const = 0;
+	virtual Horseman* CreateHorseman() const= 0;
+	virtual ~ArmyFactory() {}
+};//class ArmyFactory
+
+
+class RomanArmyFactory: public ArmyFactory
+{
+// Factory tor procude warriors of Roman army
+public:
+	Trooper* CreateTrooper() const{return new RomanTrooper;}
+	Archer* CreateArcher() const{return new RomanArcher;}
+	Horseman* CreateHorseman() const{return new RomanHorseman;}
+};//class RomanArmyFactory
+
+
+
+class CarthaginianArmyFactory: public ArmyFactory
+{
+// Factory tor procude warriors of Carthaginian army
+public:
+	Trooper* CreateTrooper() const{return new CarthaginianTrooper;}
+	Archer* CreateArcher() const{return new CarthaginianArcher;}
+	Horseman* CreateHorseman() const{return new CarthaginianHorseman;}
 };
 
-class CavalryFactory: public Factory
+class Army
 {
+// Class which contains all warriors of some army
 
 public:
-	Warrior* CreateWarrior() const{return new Horseman;}
-};
+	std::vector<Trooper *> vt;
+	std::vector<Archer *> va;
+	std::vector<Horseman *> vh;
+	
+	Army(){}
+	
+	virtual ~Army()
+	{
+		int i;
+		for(i=0; i<vt.size(); ++i) delete vt[i];
+		for(i=0; i<va.size(); ++i) delete va[i];
+		for(i=0; i<vh.size(); ++i) delete vh[i];
+	}
+	
+	void GetInfo() const
+	{
+		int i;
+		for(i=0; i<vt.size(); ++i)vt[i]->GetInfo();
+		for(i=0; i<va.size(); ++i)va[i]->GetInfo();
+		for(i=0; i<vh.size(); ++i)vh[i]->GetInfo();
+	}
+	
+};//class Army
 
-TroopFactory   *troopers_factory = NULL;
-ArchersFactory *archers_factory  = NULL;
-CavalryFactory *cavalry_factory  = NULL;
 
-typedef std::vector<Warrior *> Army_t;
-
-void Create(Army_t &army)
+class Game
 {
-	troopers_factory = new TroopFactory;
-	archers_factory = new ArchersFactory;
-	cavalry_factory = new CavalryFactory;
+// Scope of game including any army
 
-	army.push_back(troopers_factory->CreateWarrior());
-	army.push_back(archers_factory->CreateWarrior());
-	army.push_back(cavalry_factory->CreateWarrior());
-}
+	RomanArmyFactory ra_factory;
+	CarthaginianArmyFactory ca_factory;
 
-void Play(Army_t &army)
-{
-	for(int i=0; i<army.size(); i++)
-		{PRINT(i+1); army[i]->GetInfo();}
-}
+	Army *romanArmy;
+	Army *carthaginianArmy;
 
-void Destroy(Army_t &army)
-{
-	delete troopers_factory;
-	delete archers_factory;
-	delete cavalry_factory;
 
-	for(int i=0; i<army.size(); i++)
-		delete army[i];
-}
+	Army* createArmy(ArmyFactory &factory)
+	{
+		Army* p = new Army;
+
+		p->vt.push_back(factory.CreateTrooper());
+		p->va.push_back(factory.CreateArcher());
+		p->vh.push_back(factory.CreateHorseman());
+		return p;
+	}
+
+public:
+	Game()
+		:romanArmy(createArmy(ra_factory))
+		,carthaginianArmy(createArmy(ca_factory))
+	{
+		TRACE_WHERE;
+	}
+
+	void Play() const
+	{
+		PRINT("Roman army:");romanArmy->GetInfo();
+		PRINT("Carthaginian army:");carthaginianArmy->GetInfo();
+	}
+
+	~Game()
+	{
+		TRACE_WHERE;
+		delete romanArmy;
+		delete carthaginianArmy;
+	}
+};//class Game
 
 int main()
 {
-	Army_t army;
+	Game game;
+	game.Play();
 
-	Create(army);
-
-	Play(army);
-
-	Destroy(army);
 	return 0;
 }
