@@ -2,81 +2,113 @@
 #include <vector>
 #include <iostream>
 #define PRINT(WHAT) std::cout<<WHAT<<std::endl
+#define TRACE_WHERE PRINT(__FUNCTION__)
 
-
-enum EntityID_e {eEntityID_Trooper=0, eEntityID_Archer, eEntityID_Horseman};
-
-class Entity //BASE
+class Warrior //BASE
 {
 public:
 	virtual void GetInfo() const = 0;
-	virtual ~Entity() {}
-	static Entity* createEntity(EntityID_e id );
-};//class Entity
+	virtual ~Warrior() {}
+};//class Warrior
 
 
-class Trooper: public Entity //CHILD
+class Trooper: public Warrior //CHILD
 {
 
 public:
-	Trooper(): Entity() {}
-	void GetInfo() const{PRINT("Trooper");}
+	Trooper(): Warrior() {TRACE_WHERE;}
+	void GetInfo() const{PRINT("I'm Trooper");}
+	~Trooper() {TRACE_WHERE;}
 };//class Trooper
 
-class Archer: public Entity //CHILD
+class Archer: public Warrior //CHILD
 {
+
 public:
-	Archer(): Entity() {}
-	void GetInfo() const{PRINT("Archer");}
+	Archer(): Warrior() {TRACE_WHERE;}
+	void GetInfo() const{PRINT("I'm Archer");}
+	~Archer() {TRACE_WHERE;}
 };//class Archer
 
-class Horseman: public Entity //CHILD
+class Horseman: public Warrior //CHILD
 {
+
 public:
-	Horseman(): Entity() {}
-	void GetInfo() const{PRINT("Horseman");}
+	Horseman(): Warrior() {TRACE_WHERE;}
+	void GetInfo() const{PRINT("I'm Horseman");}
+	~Horseman() {TRACE_WHERE;}
 };//class Horseman
 
-Entity * Entity::createEntity(EntityID_e eID)
+class Factory
 {
-	Entity * p;
-	switch (eID)
-	{
-		case eEntityID_Trooper:
-			p = new Trooper();
-			break;
-		case eEntityID_Archer:
-			p = new Archer();
-			break;
-		case eEntityID_Horseman:
-			p = new Horseman();
-			break;
-		default:
-			assert( false);
-	}
-	return p;
-}
 
-typedef std::vector<Entity *> Army_t;
+public:
+	virtual Warrior* CreateWarrior() const = 0;
+	virtual ~Factory() {TRACE_WHERE;}
+};
+
+class TroopFactory: public Factory
+{
+
+public:
+	Warrior* CreateWarrior() const{return new Trooper;}
+};
+
+class ArchersFactory: public Factory
+{
+
+public:
+	Warrior* CreateWarrior() const{return new Archer;}
+};
+
+class CavalryFactory: public Factory
+{
+
+public:
+	Warrior* CreateWarrior() const{return new Horseman;}
+};
+
+TroopFactory   *troopers_factory = NULL;
+ArchersFactory *archers_factory  = NULL;
+CavalryFactory *cavalry_factory  = NULL;
+
+typedef std::vector<Warrior *> Army_t;
 
 void Create(Army_t &army)
 {
-	army.push_back(Entity::createEntity(eEntityID_Trooper));
-	army.push_back(Entity::createEntity(eEntityID_Archer));
-	army.push_back(Entity::createEntity(eEntityID_Horseman));
+	troopers_factory = new TroopFactory;
+	archers_factory = new ArchersFactory;
+	cavalry_factory = new CavalryFactory;
+
+	army.push_back(troopers_factory->CreateWarrior());
+	army.push_back(archers_factory->CreateWarrior());
+	army.push_back(cavalry_factory->CreateWarrior());
+}
+
+void Play(Army_t &army)
+{
+	for(int i=0; i<army.size(); i++)
+		{PRINT(i+1); army[i]->GetInfo();}
+}
+
+void Destroy(Army_t &army)
+{
+	delete troopers_factory;
+	delete archers_factory;
+	delete cavalry_factory;
+
+	for(int i=0; i<army.size(); i++)
+		delete army[i];
 }
 
 int main()
 {
-	
 	Army_t army;
 
 	Create(army);
 
-	for(int i=0; i<army.size(); i++)
-		{PRINT(i+1); army[i]->GetInfo();}
+	Play(army);
 
-	for(int i=0; i<army.size(); i++)
-		delete army[i];
+	Destroy(army);
 	return 0;
 }
