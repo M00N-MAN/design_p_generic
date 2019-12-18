@@ -76,8 +76,8 @@ class Logger
 public:
 	static Logger &Instance()
 	{
-		if(me==NULL) {me = new Logger(eLogLevel_Debug);}
-		return *me;
+		static Logger x(eLogLevel_Debug);
+		return x;
 	}
 	
 	void Put(LogLevel_e eLevel,const std::string & sFileName, const std::string & sFunctionName, size_t iCodeLine, const std::string & sMessage)
@@ -86,7 +86,6 @@ public:
 			PRINT(xLevels[eLevel]<<" "<<sFileName<<" "<<iCodeLine<<" "<<sFunctionName<<": "<<sMessage);
 	}
 };
-Logger* Logger::me = NULL;
 
 template <typename T>
 std::string tostr(const T& t)
