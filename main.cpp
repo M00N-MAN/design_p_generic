@@ -90,26 +90,59 @@ public:
 	virtual void GetInfo() const = 0;
 };//class Elephant
 
-class RomanDistance
+class DistanceAdjustable
 {
+protected:
+	float highErrorLimit;
+	float lowErrorLimit;
+	virtual void adjust(float lowOffset,float highOffset)
+	{
+		lowErrorLimit+=lowOffset;
+		highErrorLimit+=highOffset;
+	}
 public:
+	DistanceAdjustable():highErrorLimit(0.0),lowErrorLimit(0.0){}
+};
+
+class RomanDistance :public DistanceAdjustable
+{
+
+public:
+	RomanDistance()
+	{
+		highErrorLimit=1.02f;
+		lowErrorLimit=1.21f;
+	}
 	float getMiles(float test_value=32.0)
 	{
 		float t = test_value;
 		// ...
-		return t*tools::getRandomNumberXtoY/*<float>*/(1.02f,1.21f);
+		return t*tools::getRandomNumberXtoY(lowErrorLimit,highErrorLimit);
 	}
+
+	void MXVII(){adjust(1.0,-0.1);}
+	void XI(){adjust(-0.1,1.0);}
 };
 
-class CarthaginianDistance
+class CarthaginianDistance :public DistanceAdjustable
 {
+
 public:
+	CarthaginianDistance()
+	{
+		highErrorLimit=1.22f;
+		lowErrorLimit=1.01f;
+	}
+
 	float getParasas(float test_value=32.0)
 	{
 		float t = test_value;
 		// ...
-		return t*tools::getRandomNumberXtoY/*<float>*/(1.01f,1.22f);
+		return t*tools::getRandomNumberXtoY(lowErrorLimit,highErrorLimit);
 	}
+
+	void Dalt(){adjust(-0.2,2.0);}
+	void Tet(){adjust(1.0,-0.1);}
 };
 
 class Sensor
@@ -117,34 +150,37 @@ class Sensor
 public:
 	virtual ~Sensor() {}
 	virtual float getDistance(float test_value=32.0) = 0;
+	virtual void Adjust(float,float)=0;
 };
 
 float CarthaginianParasa = 3648.0; //m
 float RomanMile = 1480.0; //m
 
-class CarthaginianAdapterDistanceSensor : public Sensor
+class CarthaginianAdapterDistanceSensor : public Sensor , private RomanDistance
 {
-	RomanDistance *ls;
 
 public:
-	CarthaginianAdapterDistanceSensor(RomanDistance *s):ls(s){}
-	~CarthaginianAdapterDistanceSensor(){delete ls;}
 	float getDistance(float test_value=32.0)
 	{
-		return tools::convertValue(ls->getMiles(test_value),0.f,RomanMile,0.f,CarthaginianParasa/(CarthaginianParasa/RomanMile));
+		return tools::convertValue(RomanDistance::getMiles(test_value),0.f,RomanMile,0.f,CarthaginianParasa/(CarthaginianParasa/RomanMile));
+	}
+	void Adjust(float LowOffset,float HighOffset)
+	{
+		RomanDistance::adjust(LowOffset,HighOffset);
 	}
 };
 
-class RomanAdapterDistanceSensor : public Sensor
+class RomanAdapterDistanceSensor : public Sensor, private CarthaginianDistance
 {
-	CarthaginianDistance *ls;
 
 public:
-	RomanAdapterDistanceSensor(CarthaginianDistance *s):ls(s){}
-	~RomanAdapterDistanceSensor(){delete ls;}
 	float getDistance(float test_value=32.0)
 	{
-		return tools::convertValue(ls->getParasas(test_value),0.f,CarthaginianParasa,0.f,RomanMile*(CarthaginianParasa/RomanMile));
+		return tools::convertValue(CarthaginianDistance::getParasas(test_value),0.f,CarthaginianParasa,0.f,RomanMile*(CarthaginianParasa/RomanMile));
+	}
+	void Adjust(float LowOffset,float HighOffset)
+	{
+		CarthaginianDistance::adjust(LowOffset,HighOffset);
 	}
 };
 
@@ -331,8 +367,8 @@ public:
 	Game()
 		:romanArmy(dir.createArmy(roman_builder))
 		,carthaginianArmy(dir.createArmy(carf_builder))
-		,cSensor(new CarthaginianAdapterDistanceSensor(new RomanDistance))
-		,rSensor(new RomanAdapterDistanceSensor(new CarthaginianDistance))
+		,cSensor(new CarthaginianAdapterDistanceSensor)
+		,rSensor(new RomanAdapterDistanceSensor)
 	{
 		TRACE_HERE;
 		srand(static_cast<unsigned>(time(NULL)));
@@ -344,6 +380,19 @@ public:
 		PRINT("Carthaginian army:");carthaginianArmy->GetInfo();
 		PRINT("Carthaginian distance for Roman miles = " << cSensor->getDistance(100.));
 		PRINT("Raman distance for Carthaginian parasas = " << rSensor->getDistance(100.));
+		
+		cSensor->Adjust(-0.21,-0.2);
+		rSensor->Adjust(-0.22,-0.1);
+		
+		PRINT("Carthaginian distance for Roman miles = " << cSensor->getDistance(100.));
+		PRINT("Raman distance for Carthaginian parasas = " << rSensor->getDistance(100.));
+		
+		cSensor->Adjust(2*0.21,2*0.2);
+		rSensor->Adjust(2*0.22,2*0.1);
+		
+		PRINT("Carthaginian distance for Roman miles = " << cSensor->getDistance(100.));
+		PRINT("Raman distance for Carthaginian parasas = " << rSensor->getDistance(100.));
+
 	}
 
 	~Game()
