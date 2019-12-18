@@ -2,10 +2,10 @@
 #include <cstdlib>
 #include <assert.h>
 #include <vector>
+#include <sstream>
 #include <iostream>
 #define PRINT(WHAT) std::cout<<WHAT<<std::endl
-#define TRACE_HERE PRINT(__FUNCTION__)
-//#define TRACE_HERE
+
 
 namespace tools
 {
@@ -34,7 +34,59 @@ DstType convertValue(const SrcType &value, const SrcType &srcMin, const SrcType 
 	return static_cast<DstType>((MAX(value,srcMin) - MIN(value,srcMin)) * (static_cast<MiddleType>(dstMax - dstMin) / static_cast<MiddleType>(MAX(srcMax,srcMin) - MIN(srcMin,srcMax))) + dstMin);
 }
 
+enum LogLevel_e
+{
+	eLogLevel_Empty=0
+	,eLogLevel_Fault/*=1*/
+	,eLogLevel_Alarm/*=2*/
+	,eLogLevel_Event/*=3*/
+	,eLogLevel_Debug/*=4*/
+	,eLogLevel_Trace/*=5*/
+	,eLogLevel_SIZE
+};
+
+class Logger
+{
+	LogLevel_e eLimit;
+	std::vector<std::string> xLevels;
+
+public:
+	Logger(LogLevel_e eBorder=eLogLevel_Debug):eLimit(eBorder)
+	{
+		xLevels.push_back("Empty");
+		xLevels.push_back("Fault");
+		xLevels.push_back("Alarm");
+		xLevels.push_back("Event");
+		xLevels.push_back("Debug");
+		xLevels.push_back("Trace");
+	}
+	
+	void Put(LogLevel_e eLevel,const std::string & sFileName, const std::string & sFunctionName, size_t iCodeLine, const std::string & sMessage)
+	{
+		if(eLevel<=eLimit) PRINT(xLevels[eLevel]<<" "
+									 <<sFileName<<" "
+									 <<iCodeLine<<" "
+									 <<sFunctionName
+									 <<": "<<sMessage);
+	}
+};
+
+Logger log;
+
+template <typename T>
+std::string tostr(const T& t)
+{
+	std::ostringstream os;os<<t;
+	return os.str();
+}
+
 };//namespace tools
+
+#define LOG_Fault(ONEARG) tools::log.Put(tools::eLogLevel_Fault,__FILE__,__FUNCTION__,__LINE__,tools::tostr(ONEARG))
+#define LOG_Alarm(ONEARG) tools::log.Put(tools::eLogLevel_Alarm,__FILE__,__FUNCTION__,__LINE__,tools::tostr(ONEARG))
+#define LOG_Event(ONEARG) tools::log.Put(tools::eLogLevel_Event,__FILE__,__FUNCTION__,__LINE__,tools::tostr(ONEARG))
+#define LOG_Debug(ONEARG) tools::log.Put(tools::eLogLevel_Debug,__FILE__,__FUNCTION__,__LINE__,tools::tostr(ONEARG))
+#define LOG_Trace(ONEARG) tools::log.Put(tools::eLogLevel_Trace,__FILE__,__FUNCTION__,__LINE__,tools::tostr(ONEARG))
 
 class IEntity //BASE
 {
@@ -49,8 +101,8 @@ class Trooper
 {
 
 public:
-	Trooper() {TRACE_HERE;}
-	virtual ~Trooper() {TRACE_HERE;}
+	Trooper() {LOG_Debug("");}
+	virtual ~Trooper() {LOG_Debug("");}
 	virtual void GetInfo() const = 0;
 };//class Trooper
 
@@ -58,8 +110,8 @@ class Archer
 {
 
 public:
-	Archer() {TRACE_HERE;}
-	virtual ~Archer() {TRACE_HERE;}
+	Archer() {LOG_Debug("");}
+	virtual ~Archer() {LOG_Debug("");}
 	virtual void GetInfo() const = 0;
 };//class Archer
 
@@ -67,8 +119,8 @@ class Horseman
 {
 
 public:
-	Horseman() {TRACE_HERE;}
-	virtual ~Horseman() {TRACE_HERE;}
+	Horseman() {LOG_Debug("");}
+	virtual ~Horseman() {LOG_Debug("");}
 	virtual void GetInfo() const = 0;
 };//class Horseman
 
@@ -76,8 +128,8 @@ class Catapult
 {
 
 public:
-	Catapult() {TRACE_HERE;}
-	virtual ~Catapult() {TRACE_HERE;}
+	Catapult() {LOG_Debug("");}
+	virtual ~Catapult() {LOG_Debug("");}
 	virtual void GetInfo() const = 0;
 };//class Catapult
 
@@ -85,8 +137,8 @@ class Elephant
 {
 
 public:
-	Elephant() {TRACE_HERE;}
-	virtual ~Elephant() {TRACE_HERE;}
+	Elephant() {LOG_Debug("");}
+	virtual ~Elephant() {LOG_Debug("");}
 	virtual void GetInfo() const = 0;
 };//class Elephant
 
@@ -189,35 +241,35 @@ class RomanTrooper: public Trooper
 {
 
 public:
-	void GetInfo() const{PRINT("I'm Roman Trooper");}
+	void GetInfo() const{LOG_Event("I'm Roman Trooper");}
 };//class RomanTrooper
 
 class RomanArcher: public Archer
 {
 
 public:
-	void GetInfo() const{PRINT("I'm Roman Archer");}
+	void GetInfo() const{LOG_Event("I'm Roman Archer");}
 };//class RomanArcher
 
 class RomanHorseman: public Horseman
 {
 
 public:
-	void GetInfo() const{PRINT("I'm Roman Horseman");}
+	void GetInfo() const{LOG_Event("I'm Roman Horseman");}
 };//class RomanHorseman
 
 class RomanCatapult: public Catapult
 {
 
 public:
-	void GetInfo() const{PRINT("I'm Roman Catapult");}
+	void GetInfo() const{LOG_Event("I'm Roman Catapult");}
 };//class RomanCatapult
 
 class RomanElephant: public Elephant
 {
 
 public:
-	void GetInfo() const{PRINT("I'm Roman Elephant");}
+	void GetInfo() const{LOG_Event("I'm Roman Elephant");}
 };//class RomanElephant
 
 
@@ -226,35 +278,35 @@ class CarthaginianTrooper: public Trooper
 {
 // classes of all types of warriors in Carthaginian army
 public:
-	void GetInfo() const{PRINT("I'm Carthaginian Trooper");}
+	void GetInfo() const{LOG_Event("I'm Carthaginian Trooper");}
 };//class CarthaginianTrooper
 
 class CarthaginianArcher: public Archer
 {
 
 public:
-	void GetInfo() const{PRINT("I'm Carthaginian Archer");}
+	void GetInfo() const{LOG_Event("I'm Carthaginian Archer");}
 };//class CarthaginianArcher
 
 class CarthaginianHorseman: public Horseman
 {
 
 public:
-	void GetInfo() const{PRINT("I'm Carthaginian Horseman");}
+	void GetInfo() const{LOG_Event("I'm Carthaginian Horseman");}
 };//class CarthaginianHorseman
 
 class CarthaginianCatapult: public Catapult
 {
 
 public:
-	void GetInfo() const{PRINT("I'm Carthaginian Catapult");}
+	void GetInfo() const{LOG_Event("I'm Carthaginian Catapult");}
 };//class CarthaginianCatapult
 
 class CarthaginianElephant: public Elephant
 {
 
 public:
-	void GetInfo() const{PRINT("I'm Carthaginian Elephant");}
+	void GetInfo() const{LOG_Event("I'm Carthaginian Elephant");}
 };//class CarthaginianElephant
 
 
@@ -370,34 +422,40 @@ public:
 		,cSensor(new CarthaginianAdapterDistanceSensor)
 		,rSensor(new RomanAdapterDistanceSensor)
 	{
-		TRACE_HERE;
+		
 		srand(static_cast<unsigned>(time(NULL)));
 	}
 
 	void Play() const
 	{
-		PRINT("Roman army:");romanArmy->GetInfo();
-		PRINT("Carthaginian army:");carthaginianArmy->GetInfo();
-		PRINT("Carthaginian distance for Roman miles = " << cSensor->getDistance(100.));
-		PRINT("Raman distance for Carthaginian parasas = " << rSensor->getDistance(100.));
+		LOG_Event("Roman army:");romanArmy->GetInfo();
+		LOG_Event("Carthaginian army:");carthaginianArmy->GetInfo();
+		LOG_Event("Carthaginian distance for Roman miles = ");
+		LOG_Event(cSensor->getDistance(100.));
+		LOG_Event("Raman distance for Carthaginian parasas = ");
+		LOG_Event(rSensor->getDistance(100.));
 		
 		cSensor->Adjust(-0.21,-0.2);
 		rSensor->Adjust(-0.22,-0.1);
 		
-		PRINT("Carthaginian distance for Roman miles = " << cSensor->getDistance(100.));
-		PRINT("Raman distance for Carthaginian parasas = " << rSensor->getDistance(100.));
+		LOG_Event("Carthaginian distance for Roman miles = ");
+		LOG_Event(cSensor->getDistance(100.));
+		LOG_Event("Raman distance for Carthaginian parasas = ");
+		LOG_Event(rSensor->getDistance(100.));
 		
 		cSensor->Adjust(2*0.21,2*0.2);
 		rSensor->Adjust(2*0.22,2*0.1);
 		
-		PRINT("Carthaginian distance for Roman miles = " << cSensor->getDistance(100.));
-		PRINT("Raman distance for Carthaginian parasas = " << rSensor->getDistance(100.));
+		LOG_Event("Carthaginian distance for Roman miles = ");
+		LOG_Event(cSensor->getDistance(100.));
+		LOG_Event("Raman distance for Carthaginian parasas = ");
+		LOG_Event(rSensor->getDistance(100.));
 
 	}
 
 	~Game()
 	{
-		TRACE_HERE;
+		
 		delete romanArmy;
 		delete carthaginianArmy;
 		delete cSensor;
