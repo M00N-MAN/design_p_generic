@@ -90,6 +90,63 @@ public:
 	virtual void GetInfo() const = 0;
 };//class Elephant
 
+class RomanDistance
+{
+public:
+	float getMiles(float test_value=32.0)
+	{
+		float t = test_value;
+		// ...
+		return t*tools::getRandomNumberXtoY/*<float>*/(1.02f,1.21f);
+	}
+};
+
+class CarthaginianDistance
+{
+public:
+	float getParasas(float test_value=32.0)
+	{
+		float t = test_value;
+		// ...
+		return t*tools::getRandomNumberXtoY/*<float>*/(1.01f,1.22f);
+	}
+};
+
+class Sensor
+{
+public:
+	virtual ~Sensor() {}
+	virtual float getDistance(float test_value=32.0) = 0;
+};
+
+float CarthaginianParasa = 3648.0; //m
+float RomanMile = 1480.0; //m
+
+class CarthaginianAdapterDistanceSensor : public Sensor
+{
+	RomanDistance *ls;
+
+public:
+	CarthaginianAdapterDistanceSensor(RomanDistance *s):ls(s){}
+	~CarthaginianAdapterDistanceSensor(){delete ls;}
+	float getDistance(float test_value=32.0)
+	{
+		return tools::convertValue(ls->getMiles(test_value),0.f,RomanMile,0.f,CarthaginianParasa/(CarthaginianParasa/RomanMile));
+	}
+};
+
+class RomanAdapterDistanceSensor : public Sensor
+{
+	CarthaginianDistance *ls;
+
+public:
+	RomanAdapterDistanceSensor(CarthaginianDistance *s):ls(s){}
+	~RomanAdapterDistanceSensor(){delete ls;}
+	float getDistance(float test_value=32.0)
+	{
+		return tools::convertValue(ls->getParasas(test_value),0.f,CarthaginianParasa,0.f,RomanMile*(CarthaginianParasa/RomanMile));
+	}
+};
 
 // classes of all types of warriors in Roman army
 class RomanTrooper: public Trooper
@@ -267,18 +324,26 @@ class Game
 	Army *romanArmy;
 	Army *carthaginianArmy;
 
+	Sensor * cSensor;
+	Sensor * rSensor;
+
 public:
 	Game()
 		:romanArmy(dir.createArmy(roman_builder))
 		,carthaginianArmy(dir.createArmy(carf_builder))
+		,cSensor(new CarthaginianAdapterDistanceSensor(new RomanDistance))
+		,rSensor(new RomanAdapterDistanceSensor(new CarthaginianDistance))
 	{
 		TRACE_HERE;
+		srand(static_cast<unsigned>(time(NULL)));
 	}
 
 	void Play() const
 	{
 		PRINT("Roman army:");romanArmy->GetInfo();
 		PRINT("Carthaginian army:");carthaginianArmy->GetInfo();
+		PRINT("Carthaginian distance for Roman miles = " << cSensor->getDistance(100.));
+		PRINT("Raman distance for Carthaginian parasas = " << rSensor->getDistance(100.));
 	}
 
 	~Game()
@@ -286,6 +351,8 @@ public:
 		TRACE_HERE;
 		delete romanArmy;
 		delete carthaginianArmy;
+		delete cSensor;
+		delete rSensor;
 	}
 };//class Game
 
