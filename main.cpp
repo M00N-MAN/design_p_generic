@@ -149,22 +149,20 @@ public:
 	
 	virtual ~Army()
 	{
-		int i;
-		for(i=0; i<vt.size(); ++i) delete vt[i];
-		for(i=0; i<va.size(); ++i) delete va[i];
-		for(i=0; i<vh.size(); ++i) delete vh[i];
-		for(i=0; i<vc.size(); ++i) delete vc[i];
-		for(i=0; i<ve.size(); ++i) delete ve[i];
+		for(size_t i=0; i<vt.size(); ++i) delete vt[i];
+		for(size_t i=0; i<va.size(); ++i) delete va[i];
+		for(size_t i=0; i<vh.size(); ++i) delete vh[i];
+		for(size_t i=0; i<vc.size(); ++i) delete vc[i];
+		for(size_t i=0; i<ve.size(); ++i) delete ve[i];
 	}
 	
 	void GetInfo() const
 	{
-		int i;
-		for(i=0; i<vt.size(); ++i)vt[i]->GetInfo();
-		for(i=0; i<va.size(); ++i)va[i]->GetInfo();
-		for(i=0; i<vh.size(); ++i)vh[i]->GetInfo();
-		for(i=0; i<vc.size(); ++i)vc[i]->GetInfo();
-		for(i=0; i<ve.size(); ++i)ve[i]->GetInfo();
+		for(size_t i=0; i<vt.size(); ++i)vt[i]->GetInfo();
+		for(size_t i=0; i<va.size(); ++i)va[i]->GetInfo();
+		for(size_t i=0; i<vh.size(); ++i)vh[i]->GetInfo();
+		for(size_t i=0; i<vc.size(); ++i)vc[i]->GetInfo();
+		for(size_t i=0; i<ve.size(); ++i)ve[i]->GetInfo();
 	}
 	
 };//class Army
