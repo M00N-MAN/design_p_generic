@@ -1,9 +1,40 @@
+#include <time.h>
+#include <cstdlib>
 #include <assert.h>
 #include <vector>
 #include <iostream>
 #define PRINT(WHAT) std::cout<<WHAT<<std::endl
 #define TRACE_WHERE PRINT(__FUNCTION__)
 //#define TRACE_WHERE
+
+namespace tools
+{
+template <typename Type>
+static Type getRandomNumber0to1()
+{
+	return static_cast <Type> (rand()) / static_cast <Type> (RAND_MAX);
+}
+template <typename Type>
+static Type getRandomNumber0toX(Type X)
+{
+	return static_cast <Type> (rand()) / (static_cast <Type> (RAND_MAX/X));
+}
+template <typename Type>
+static Type getRandomNumberXtoY(Type LO,Type HI)
+{
+	return LO + static_cast <Type> (rand()) /( static_cast <Type> (RAND_MAX/(HI-LO)));
+}
+
+template<typename T> T MAX(const T &t1,const T &t2){return t1>=t2?t1:t2;}
+template<typename T> T MIN(const T &t1,const T &t2){return t1<=t2?t1:t2;}
+
+template <typename SrcType,typename DstType,typename MiddleType=float>
+DstType convertValue(const SrcType &value, const SrcType &srcMin, const SrcType &srcMax, const DstType &dstMin, const DstType &dstMax)
+{
+	return static_cast<DstType>((MAX(value,srcMin) - MIN(value,srcMin)) * (static_cast<MiddleType>(dstMax - dstMin) / static_cast<MiddleType>(MAX(srcMax,srcMin) - MIN(srcMin,srcMax))) + dstMin);
+}
+
+};//namespace tools
 
 class IEntity //BASE
 {
@@ -224,7 +255,6 @@ public:
 		return(builder.GetArmy());
 	}
 };
-
 
 class Game
 {
