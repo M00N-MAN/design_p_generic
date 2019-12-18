@@ -4,8 +4,8 @@
 #include <vector>
 #include <iostream>
 #define PRINT(WHAT) std::cout<<WHAT<<std::endl
-#define TRACE_WHERE PRINT(__FUNCTION__)
-//#define TRACE_WHERE
+#define TRACE_HERE PRINT(__FUNCTION__)
+//#define TRACE_HERE
 
 namespace tools
 {
@@ -49,8 +49,8 @@ class Trooper
 {
 
 public:
-	Trooper() {TRACE_WHERE;}
-	virtual ~Trooper() {TRACE_WHERE;}
+	Trooper() {TRACE_HERE;}
+	virtual ~Trooper() {TRACE_HERE;}
 	virtual void GetInfo() const = 0;
 };//class Trooper
 
@@ -58,8 +58,8 @@ class Archer
 {
 
 public:
-	Archer() {TRACE_WHERE;}
-	virtual ~Archer() {TRACE_WHERE;}
+	Archer() {TRACE_HERE;}
+	virtual ~Archer() {TRACE_HERE;}
 	virtual void GetInfo() const = 0;
 };//class Archer
 
@@ -67,8 +67,8 @@ class Horseman
 {
 
 public:
-	Horseman() {TRACE_WHERE;}
-	virtual ~Horseman() {TRACE_WHERE;}
+	Horseman() {TRACE_HERE;}
+	virtual ~Horseman() {TRACE_HERE;}
 	virtual void GetInfo() const = 0;
 };//class Horseman
 
@@ -76,8 +76,8 @@ class Catapult
 {
 
 public:
-	Catapult() {TRACE_WHERE;}
-	virtual ~Catapult() {TRACE_WHERE;}
+	Catapult() {TRACE_HERE;}
+	virtual ~Catapult() {TRACE_HERE;}
 	virtual void GetInfo() const = 0;
 };//class Catapult
 
@@ -85,8 +85,8 @@ class Elephant
 {
 
 public:
-	Elephant() {TRACE_WHERE;}
-	virtual ~Elephant() {TRACE_WHERE;}
+	Elephant() {TRACE_HERE;}
+	virtual ~Elephant() {TRACE_HERE;}
 	virtual void GetInfo() const = 0;
 };//class Elephant
 
@@ -272,7 +272,7 @@ public:
 		:romanArmy(dir.createArmy(roman_builder))
 		,carthaginianArmy(dir.createArmy(carf_builder))
 	{
-		TRACE_WHERE;
+		TRACE_HERE;
 	}
 
 	void Play() const
@@ -283,7 +283,7 @@ public:
 
 	~Game()
 	{
-		TRACE_WHERE;
+		TRACE_HERE;
 		delete romanArmy;
 		delete carthaginianArmy;
 	}
