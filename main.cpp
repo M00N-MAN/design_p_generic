@@ -45,12 +45,16 @@ enum LogLevel_e
 	,eLogLevel_SIZE
 };
 
+
+
 class Logger
 {
+	static Logger *me;
+	
 	LogLevel_e eLimit;
 	std::vector<std::string> xLevels;
 
-public:
+	Logger();
 	Logger(LogLevel_e eBorder=eLogLevel_Debug):eLimit(eBorder)
 	{
 		xLevels.push_back("Empty");
@@ -59,19 +63,30 @@ public:
 		xLevels.push_back("Event");
 		xLevels.push_back("Debug");
 		xLevels.push_back("Trace");
+		
+		Put(eLogLevel_Alarm,"","",0,"Logger is ready");
+	}
+	~Logger()
+	{
+		Put(eLogLevel_Alarm,"","",0,"Logger has been destroyed");
+	}
+	Logger(const Logger &);
+	Logger &operator =(const Logger &);
+	
+public:
+	static Logger &Instance()
+	{
+		if(me==NULL) {me = new Logger(eLogLevel_Debug);}
+		return *me;
 	}
 	
 	void Put(LogLevel_e eLevel,const std::string & sFileName, const std::string & sFunctionName, size_t iCodeLine, const std::string & sMessage)
 	{
-		if(eLevel<=eLimit) PRINT(xLevels[eLevel]<<" "
-									 <<sFileName<<" "
-									 <<iCodeLine<<" "
-									 <<sFunctionName
-									 <<": "<<sMessage);
+		if(eLevel<=eLimit)
+			PRINT(xLevels[eLevel]<<" "<<sFileName<<" "<<iCodeLine<<" "<<sFunctionName<<": "<<sMessage);
 	}
 };
-
-Logger log;
+Logger* Logger::me = NULL;
 
 template <typename T>
 std::string tostr(const T& t)
@@ -82,11 +97,11 @@ std::string tostr(const T& t)
 
 };//namespace tools
 
-#define LOG_Fault(ONEARG) tools::log.Put(tools::eLogLevel_Fault,__FILE__,__FUNCTION__,__LINE__,tools::tostr(ONEARG))
-#define LOG_Alarm(ONEARG) tools::log.Put(tools::eLogLevel_Alarm,__FILE__,__FUNCTION__,__LINE__,tools::tostr(ONEARG))
-#define LOG_Event(ONEARG) tools::log.Put(tools::eLogLevel_Event,__FILE__,__FUNCTION__,__LINE__,tools::tostr(ONEARG))
-#define LOG_Debug(ONEARG) tools::log.Put(tools::eLogLevel_Debug,__FILE__,__FUNCTION__,__LINE__,tools::tostr(ONEARG))
-#define LOG_Trace(ONEARG) tools::log.Put(tools::eLogLevel_Trace,__FILE__,__FUNCTION__,__LINE__,tools::tostr(ONEARG))
+#define LOG_Fault(ONEARG) tools::Logger::Instance().Put(tools::eLogLevel_Fault,__FILE__,__FUNCTION__,__LINE__,tools::tostr(ONEARG))
+#define LOG_Alarm(ONEARG) tools::Logger::Instance().Put(tools::eLogLevel_Alarm,__FILE__,__FUNCTION__,__LINE__,tools::tostr(ONEARG))
+#define LOG_Event(ONEARG) tools::Logger::Instance().Put(tools::eLogLevel_Event,__FILE__,__FUNCTION__,__LINE__,tools::tostr(ONEARG))
+#define LOG_Debug(ONEARG) tools::Logger::Instance().Put(tools::eLogLevel_Debug,__FILE__,__FUNCTION__,__LINE__,tools::tostr(ONEARG))
+#define LOG_Trace(ONEARG) tools::Logger::Instance().Put(tools::eLogLevel_Trace,__FILE__,__FUNCTION__,__LINE__,tools::tostr(ONEARG))
 
 class IEntity //BASE
 {
